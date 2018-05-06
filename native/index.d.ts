@@ -3,9 +3,6 @@ export interface Printer {
     name: string;
     address: string;
 }
-export interface DiscoveryResult {
-    printers: Array<Printer>;
-}
 export interface PrinterStatus {
     connected: boolean;
     isReadyToPrint?: boolean;
@@ -40,19 +37,11 @@ export interface PrinterStatus {
  * ```
  */
 export declare class ZebraPrinter extends IonicNativePlugin {
-    echo(options: {
-        value: string;
-    }): Promise<any>;
-    print(options: {
-        cpcl: string;
-    }): Promise<any>;
+    echo(value: string): Promise<any>;
+    print(cpcl: string): Promise<any>;
     isConnected(): Promise<boolean>;
-    printerStatus(options: {
-        MACAddress: string;
-    }): Promise<PrinterStatus>;
-    connect(options: {
-        MACAddress: string;
-    }): Promise<boolean>;
-    disconnect(): Promise<boolean>;
-    discover(): Promise<DiscoveryResult>;
+    printerStatus(adderss: string): Promise<PrinterStatus>;
+    connect(adress: string): Promise<any>;
+    disconnect(): Promise<any>;
+    discover(): Promise<Array<Printer>>;
 }

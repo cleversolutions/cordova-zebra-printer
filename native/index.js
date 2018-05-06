@@ -56,11 +56,11 @@ var ZebraPrinter = (function (_super) {
     function ZebraPrinter() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    ZebraPrinter.prototype.echo = function (options) { return; };
-    ZebraPrinter.prototype.print = function (options) { return; };
+    ZebraPrinter.prototype.echo = function (value) { return; };
+    ZebraPrinter.prototype.print = function (cpcl) { return; };
     ZebraPrinter.prototype.isConnected = function () { return; };
-    ZebraPrinter.prototype.printerStatus = function (options) { return; };
-    ZebraPrinter.prototype.connect = function (options) { return; };
+    ZebraPrinter.prototype.printerStatus = function (adderss) { return; };
+    ZebraPrinter.prototype.connect = function (adress) { return; };
     ZebraPrinter.prototype.disconnect = function () { return; };
     ZebraPrinter.prototype.discover = function () { return; };
     ZebraPrinter.decorators = [
@@ -71,13 +71,13 @@ var ZebraPrinter = (function (_super) {
     __decorate([
         Cordova(),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [Object]),
+        __metadata("design:paramtypes", [String]),
         __metadata("design:returntype", Promise)
     ], ZebraPrinter.prototype, "echo", null);
     __decorate([
         Cordova(),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [Object]),
+        __metadata("design:paramtypes", [String]),
         __metadata("design:returntype", Promise)
     ], ZebraPrinter.prototype, "print", null);
     __decorate([
@@ -89,13 +89,13 @@ var ZebraPrinter = (function (_super) {
     __decorate([
         Cordova(),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [Object]),
+        __metadata("design:paramtypes", [String]),
         __metadata("design:returntype", Promise)
     ], ZebraPrinter.prototype, "printerStatus", null);
     __decorate([
         Cordova(),
         __metadata("design:type", Function),
-        __metadata("design:paramtypes", [Object]),
+        __metadata("design:paramtypes", [String]),
         __metadata("design:returntype", Promise)
     ], ZebraPrinter.prototype, "connect", null);
     __decorate([
@@ -113,12 +113,12 @@ var ZebraPrinter = (function (_super) {
     ZebraPrinter = __decorate([
         Plugin({
             pluginName: 'ZebraPrinter',
-            plugin: '',
-            pluginRef: '',
-            repo: '',
+            plugin: 'ca-cleversolutions-zebraprinter',
+            pluginRef: 'cordova.plugins.zebraPrinter',
+            repo: 'git@github.com:cleversolutions/cordova-zebra-printer.git',
             install: '',
             installVariables: [],
-            platforms: [] // Array of platforms supported, example: ['Android', 'iOS']
+            platforms: ['Android', 'iOS'] // Array of platforms supported, example: ['Android', 'iOS']
         })
     ], ZebraPrinter);
     return ZebraPrinter;

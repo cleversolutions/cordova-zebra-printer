@@ -9,8 +9,13 @@
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
             <feature name="ZebraPrinter">
-                <param name="ios-package" value="ZebraPrinter" />
+                <param name="ios-package" value="ZebraPrinterPlugin" />
             </feature>
+        </config-file>
+        <config-file target="*-Info.plist" parent="UISupportedExternalAccessoryProtocols">
+            <array>
+                <string>com.zebra.rawport</string>
+            </array>
         </config-file>
         <!-- Swift support -->
         <dependency id="cordova-plugin-add-swift-support" version="1.7.2"/>
@@ -38,7 +43,7 @@
 
         <source-file src="src/ios/lib/libZSDK_API.a" framework="true" />
         <!-- Plugin Source -->
-        <source-file src="src/ios/ZebraPrinter.swift" />
+        <source-file src="src/ios/ZebraPrinterPlugin.swift" />
         
     </platform>
 </plugin>

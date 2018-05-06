@@ -13,7 +13,7 @@
     "cordova-ios"
   ],
   "author": "Evan Moore",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "gulp": "^3.9.1"
   }
