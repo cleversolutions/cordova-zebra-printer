@@ -1,11 +1,16 @@
 # cordova-zebra-printer
 A Cordova plugin for Zebra printers for both iOS and Android with Ionic 3 bindings
 
+Get from npm
+```
+cordova plugin add ca-cleversolutions-zebraprinter
+```
+or get the latest version from git
+```
+cordova plugin add https://github.com/cleversolutions/cordova-zebra-printer.git
+```
+
 To use with Ionic 3
-
-I've not published this to cordova plugin registry yet so clone this repo somewhere then in your project
-ionic cordova plugin add /path/to/this/plugin
-
 
 Add the Ionic 3 bindings to your app.module.ts file
 ```
