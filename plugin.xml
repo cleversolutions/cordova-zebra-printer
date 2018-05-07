@@ -48,7 +48,7 @@
         <source-file src="src/ios/ZebraPrinterPlugin.swift" />
     </platform>
     <platform name="android">
-        <config-file parent="/*" target="res/xml/config.xml">
+        <config-file parent="/*" target="config.xml">
             <feature name="ZebraPrinter">
                 <param name="android-package" value="com.apache.cordova.plugins.zebra.ZebraPrinter" />
             </feature>
@@ -58,6 +58,6 @@
             <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
         </config-file>
         <source-file src="src/android/com/apache/cordova/plugins/zebra/ZebraPrinter.java" target-dir="src/com/apache/cordova/plugins/zebra/" />
-        <source-file src="src/android/libs/ZSDK_ANDROID_API.jar" target-dir="libs"/>
+        <source-file src="src/android/lib/ZSDK_ANDROID_API.jar" target-dir="libs"/>
     </platform>
 </plugin>

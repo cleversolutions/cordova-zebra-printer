@@ -31,6 +31,7 @@ public class ZebraPrinter extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+        Log.v("EMO", "Execute on ZebraPrinter Plygin called");
         if (action.equals("echo")) {
             String message = args.getString(0);
             this.echo(message, callbackContext);
