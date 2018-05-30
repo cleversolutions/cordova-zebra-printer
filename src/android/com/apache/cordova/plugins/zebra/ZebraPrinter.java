@@ -111,8 +111,11 @@ public class ZebraPrinter extends CordovaPlugin {
         }
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-                instance.printCPCL(cpcl);
-                callbackContext.success();
+                if(instance.printCPCL(cpcl)){
+                    callbackContext.success();
+                }else{
+                    callbackContext.error("Print Failed. Printer Likely Disconnected.");
+                }
             }
         });
     }
