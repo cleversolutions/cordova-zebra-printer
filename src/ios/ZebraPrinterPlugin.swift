@@ -54,6 +54,10 @@ class ZebraPrinterPlugin: CDVPlugin {
             if( self.isConnected()){
                 let data = cpcl.data(using: .utf8)
                 var error: NSError?
+                // it seems self.isConnected() can lie if the printer has power cycled
+                // a workaround is to close and reopen the connection
+                self.printerConnection!.close()
+                self.printerConnection!.open()
                 self.printerConnection!.write(data, error:&error)
                 if error != nil{
                     let pluginResult = CDVPluginResult(
@@ -63,6 +67,7 @@ class ZebraPrinterPlugin: CDVPlugin {
                         pluginResult,
                         callbackId: command.callbackId
                     )
+                    return
                 }
             }else{
                 let pluginResult = CDVPluginResult(
@@ -72,6 +77,7 @@ class ZebraPrinterPlugin: CDVPlugin {
                     pluginResult,
                     callbackId: command.callbackId
                 )
+                return
             }
             let pluginResult = CDVPluginResult(
                 status: CDVCommandStatus_OK
