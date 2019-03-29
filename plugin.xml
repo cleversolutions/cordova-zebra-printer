@@ -46,6 +46,7 @@
         <header-file src="src/ios/ZebraPrinter-Bridging-Header.h" />
         <!-- Plugin Source -->
         <source-file src="src/ios/ZebraPrinterPlugin.swift" />
+        <preference name="UseSwiftLanguageVersion" value="5" />
     </platform>
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
