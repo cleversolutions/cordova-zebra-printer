@@ -56,7 +56,6 @@ var ZebraPrinter = (function (_super) {
     function ZebraPrinter() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    ZebraPrinter.prototype.echo = function (value) { return; };
     ZebraPrinter.prototype.print = function (cpcl) { return; };
     ZebraPrinter.prototype.isConnected = function () { return; };
     ZebraPrinter.prototype.printerStatus = function (adderss) { return; };
@@ -68,12 +67,6 @@ var ZebraPrinter = (function (_super) {
     ];
     /** @nocollapse */
     ZebraPrinter.ctorParameters = function () { return []; };
-    __decorate([
-        Cordova(),
-        __metadata("design:type", Function),
-        __metadata("design:paramtypes", [String]),
-        __metadata("design:returntype", Promise)
-    ], ZebraPrinter.prototype, "echo", null);
     __decorate([
         Cordova(),
         __metadata("design:type", Function),

@@ -1,9 +1,5 @@
 var exec = require('cordova/exec');
 
-exports.echo = function (arg0, success, error) {
-    exec(success, error, 'ZebraPrinter', 'echo', [arg0]);
-};
-
 exports.discover = function (success, error) {
     exec(success, error, 'ZebraPrinter', 'discover', []);
 };
@@ -15,6 +11,10 @@ exports.connect = function (address, success, error) {
 exports.disconnect = function (success, error) {
     exec(success, error, 'ZebraPrinter', 'disconnect', []);
 };
+
+exports.printerStatus = function(success, error){
+    exec(success, error, 'ZebraPrinter', 'printerStatus', []);
+}
 
 exports.isConnected = function (success, error) {
     exec(success, error, 'ZebraPrinter', 'isConnected', []);

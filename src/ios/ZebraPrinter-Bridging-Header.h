@@ -1,6 +1,8 @@
 #import "ZebraPrinterConnection.h"
 #import "ZebraPrinter.h"
 #import "ZebraPrinterFactory.h"
+#import "PrinterStatus.h"
+#import "PrinterStatusMessages.h"
 #import "TcpPrinterConnection.h"
 #import "MFiBtPrinterConnection.h"
 #import "SGD.h"

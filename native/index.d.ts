@@ -37,10 +37,9 @@ export interface PrinterStatus {
  * ```
  */
 export declare class ZebraPrinter extends IonicNativePlugin {
-    echo(value: string): Promise<any>;
     print(cpcl: string): Promise<any>;
     isConnected(): Promise<boolean>;
-    printerStatus(adderss: string): Promise<PrinterStatus>;
+    printerStatus(): Promise<PrinterStatus>;
     connect(adress: string): Promise<any>;
     disconnect(): Promise<any>;
     discover(): Promise<Array<Printer>>;
