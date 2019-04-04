@@ -40,11 +40,7 @@ public class ZebraPrinter extends CordovaPlugin {
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
         Log.v("EMO", "Execute on ZebraPrinter Plugin called");
-        if (action.equals("echo")) {
-            String message = args.getString(0);
-            this.echo(message, callbackContext);
-            return true;
-        } else if (action.equals("discover")) {
+        if (action.equals("discover")) {
             this.discover(args, callbackContext);
             return true;
         } else if (action.equals("connect")) {
@@ -59,8 +55,26 @@ public class ZebraPrinter extends CordovaPlugin {
         } else if (action.equals("disconnect")) {
             this.disconnect(args, callbackContext);
             return true;
+        } else if (action.equals("printerStatus")) {
+            this.printerStatus(args, callbackContext);
+            return true;
         }
         return false;
+    }
+
+    private void printerStatus(JSONArray args, final CallbackContext callbackContext) {
+        final ZebraPrinter instance = this;
+
+        cordova.getThreadPool().execute(new Runnable() {
+            public void run() {
+                JSONObject status = instance.GetPrinterStatus();
+                if (status != null) {
+                    callbackContext.success(status);
+                } else {
+                    callbackContext.error("Failed to get status.");
+                }
+            }
+        });
     }
 
     private void discover(JSONArray args, final CallbackContext callbackContext) {
@@ -111,9 +125,9 @@ public class ZebraPrinter extends CordovaPlugin {
         }
         cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-                if(instance.printCPCL(cpcl)){
+                if (instance.printCPCL(cpcl)) {
                     callbackContext.success();
-                }else{
+                } else {
                     callbackContext.error("Print Failed. Printer Likely Disconnected.");
                 }
             }
@@ -139,14 +153,6 @@ public class ZebraPrinter extends CordovaPlugin {
                 callbackContext.success();
             }
         });
-    }
-
-    private void echo(String message, CallbackContext callbackContext) {
-        if (message != null && message.length() > 0) {
-            callbackContext.success(message);
-        } else {
-            callbackContext.error("Expected one non-empty string argument.");
-        }
     }
 
     private boolean printCPCL(String cpcl) {
@@ -218,6 +224,49 @@ public class ZebraPrinter extends CordovaPlugin {
                 e.printStackTrace();
             }
         }
+    }
+
+    private JSONObject GetPrinterStatus() {
+        JSONObject errorStatus = new JSONObject();
+        try{
+            errorStatus.put("connected", false);
+            errorStatus.put("isReadyToPrint", false);
+            errorStatus.put("isPaused", false);
+            errorStatus.put("isReceiveBufferFull", false);
+            errorStatus.put("isRibbonOut", false);
+            errorStatus.put("isPaperOut", false);
+            errorStatus.put("isHeadTooHot", false);
+            errorStatus.put("isHeadOpen", false);
+            errorStatus.put("isHeadCold", false);
+            errorStatus.put("isPartialFormatInProgress", false);        
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+
+        if (isConnected() && printer != null) {
+            try{
+                JSONObject status = new JSONObject();
+                PrinterStatus zebraStatus = printer.getCurrentStatus();
+                status.put("connected", true);
+                status.put("isReadyToPrint", zebraStatus.isReadyToPrint);
+                status.put("isPaused", zebraStatus.isPaused);
+                status.put("isReceiveBufferFull", zebraStatus.isReceiveBufferFull);
+                status.put("isRibbonOut", zebraStatus.isRibbonOut);
+                status.put("isPaperOut", zebraStatus.isPaperOut);
+                status.put("isHeadTooHot", zebraStatus.isHeadTooHot);
+                status.put("isHeadOpen", zebraStatus.isHeadOpen);
+                status.put("isHeadCold", zebraStatus.isHeadCold);
+                status.put("isPartialFormatInProgress", false);
+                return status;
+            } catch (Exception e) {
+                System.err.println(e.getMessage());
+                return errorStatus;
+            }
+        }else{
+
+        }
+
+        return errorStatus;
     }
 
     private JSONArray NonZebraDiscovery() {
