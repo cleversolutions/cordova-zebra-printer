@@ -41,7 +41,7 @@
         <!-- ZSDK Library -->
         <source-file src="src/ios/lib/libZSDK_API.a" framework="true" />
         <!-- Briding File -->
-        <header-file src="src/ios/ZebraPrinter-Bridging-Header.h" />
+        <header-file src="src/ios/Bridging-Header.h" />
         <!-- Plugin Source -->
         <source-file src="src/ios/ZebraPrinterPlugin.swift" />
     </platform>
