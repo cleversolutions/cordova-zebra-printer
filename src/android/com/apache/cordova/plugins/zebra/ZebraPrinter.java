@@ -12,81 +12,67 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-
-import java.util.Map;
 import java.util.Set;
 
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.Connection;
 import com.zebra.sdk.comm.ConnectionException;
-import com.zebra.sdk.printer.PrinterLanguage;
 import com.zebra.sdk.printer.PrinterStatus;
 import com.zebra.sdk.printer.ZebraPrinterFactory;
 import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException;
-import com.zebra.sdk.printer.discovery.BluetoothDiscoverer;
-import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
-import com.zebra.sdk.printer.discovery.DiscoveredPrinterBluetooth;
-import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 
 public class ZebraPrinter extends CordovaPlugin {
     private Connection printerConnection;
     private com.zebra.sdk.printer.ZebraPrinter printer;
-    private String macAddress;
-    static final String lock = "ZebraPluginLock";
+    private static final String lock = "ZebraPluginLock";
 
     @Override
-    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+    public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
         Log.v("EMO", "Execute on ZebraPrinter Plugin called");
-        if (action.equals("discover")) {
-            this.discover(args, callbackContext);
-            return true;
-        } else if (action.equals("connect")) {
-            this.connect(args, callbackContext);
-            return true;
-        } else if (action.equals("print")) {
-            this.print(args, callbackContext);
-            return true;
-        } else if (action.equals("isConnected")) {
-            this.isConnected(args, callbackContext);
-            return true;
-        } else if (action.equals("disconnect")) {
-            this.disconnect(args, callbackContext);
-            return true;
-        } else if (action.equals("printerStatus")) {
-            this.printerStatus(args, callbackContext);
-            return true;
+        switch (action) {
+            case "discover":
+                this.discover(callbackContext);
+                return true;
+            case "connect":
+                this.connect(args, callbackContext);
+                return true;
+            case "print":
+                this.print(args, callbackContext);
+                return true;
+            case "isConnected":
+                this.isConnected(callbackContext);
+                return true;
+            case "disconnect":
+                this.disconnect(callbackContext);
+                return true;
+            case "printerStatus":
+                this.printerStatus(callbackContext);
+                return true;
         }
         return false;
     }
 
-    private void printerStatus(JSONArray args, final CallbackContext callbackContext) {
+    private void printerStatus(final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
 
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                JSONObject status = instance.GetPrinterStatus();
-                if (status != null) {
-                    callbackContext.success(status);
-                } else {
-                    callbackContext.error("Failed to get status.");
-                }
+        cordova.getThreadPool().execute(() -> {
+            JSONObject status = instance.GetPrinterStatus();
+            if (status != null) {
+                callbackContext.success(status);
+            } else {
+                callbackContext.error("Failed to get status.");
             }
         });
     }
 
-    private void discover(JSONArray args, final CallbackContext callbackContext) {
+    private void discover(final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                JSONArray printers = instance.NonZebraDiscovery();
-                if (printers != null) {
-                    callbackContext.success(printers);
-                } else {
-                    callbackContext.error("Discovery Failed");
-                }
+        cordova.getThreadPool().execute(() -> {
+            JSONArray printers = instance.NonZebraDiscovery();
+            if (printers != null) {
+                callbackContext.success(printers);
+            } else {
+                callbackContext.error("Discovery Failed");
             }
         });
     }
@@ -101,14 +87,12 @@ public class ZebraPrinter extends CordovaPlugin {
             callbackContext.error("Connect Failed: " + e.getMessage());
             return;
         }
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                printer = instance.connect(address);
-                if (printer != null) {
-                    callbackContext.success();
-                } else {
-                    callbackContext.error("Connect Failed");
-                }
+        cordova.getThreadPool().execute(() -> {
+            printer = instance.connect(address);
+            if (printer != null) {
+                callbackContext.success();
+            } else {
+                callbackContext.error("Connect Failed");
             }
         });
     }
@@ -123,35 +107,29 @@ public class ZebraPrinter extends CordovaPlugin {
             callbackContext.error("Print Failed: " + e.getMessage());
             return;
         }
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                if (instance.printCPCL(cpcl)) {
-                    callbackContext.success();
-                } else {
-                    callbackContext.error("Print Failed. Printer Likely Disconnected.");
-                }
+        cordova.getThreadPool().execute(() -> {
+            if (instance.printCPCL(cpcl)) {
+                callbackContext.success();
+            } else {
+                callbackContext.error("Print Failed. Printer Likely Disconnected.");
             }
         });
     }
 
-    private void isConnected(JSONArray args, final CallbackContext callbackContext) {
+    private void isConnected(final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                boolean result = instance.isConnected();
-                callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
-                callbackContext.success();
-            }
+        cordova.getThreadPool().execute(() -> {
+            boolean result = instance.isConnected();
+            callbackContext.sendPluginResult(new PluginResult(PluginResult.Status.OK, result));
+            callbackContext.success();
         });
     }
 
-    private void disconnect(JSONArray args, final CallbackContext callbackContext) {
+    private void disconnect(final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
-        cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                instance.disconnect();
-                callbackContext.success();
-            }
+        cordova.getThreadPool().execute(() -> {
+            instance.disconnect();
+            callbackContext.success();
         });
     }
 
@@ -181,10 +159,10 @@ public class ZebraPrinter extends CordovaPlugin {
     }
 
     private com.zebra.sdk.printer.ZebraPrinter connect(String macAddress) {
-        if (isConnected())
+        if (isConnected()) {
             disconnect();
+        }
         printerConnection = null;
-        this.macAddress = macAddress;
         printerConnection = new BluetoothConnection(macAddress);
         synchronized (ZebraPrinter.lock) {
             try {
@@ -199,7 +177,6 @@ public class ZebraPrinter extends CordovaPlugin {
             if (printerConnection.isConnected()) {
                 try {
                     printer = ZebraPrinterFactory.getInstance(printerConnection);
-                    PrinterLanguage pl = printer.getPrinterControlLanguage();
                 } catch (ConnectionException e) {
                     Log.v("EMO", "Printer - Error...", e);
                     printer = null;
@@ -219,6 +196,8 @@ public class ZebraPrinter extends CordovaPlugin {
             try {
                 if (printerConnection != null) {
                     printerConnection.close();
+                    printerConnection = null;
+                    printer = null;
                 }
             } catch (ConnectionException e) {
                 e.printStackTrace();
@@ -262,8 +241,6 @@ public class ZebraPrinter extends CordovaPlugin {
                 System.err.println(e.getMessage());
                 return errorStatus;
             }
-        }else{
-
         }
 
         return errorStatus;
@@ -276,8 +253,7 @@ public class ZebraPrinter extends CordovaPlugin {
             BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
             Set<BluetoothDevice> devices = adapter.getBondedDevices();
 
-            for (Iterator<BluetoothDevice> it = devices.iterator(); it.hasNext();) {
-                BluetoothDevice device = it.next();
+            for (BluetoothDevice device : devices) {
                 String name = device.getName();
                 String mac = device.getAddress();
 
@@ -292,4 +268,5 @@ public class ZebraPrinter extends CordovaPlugin {
         }
         return printers;
     }
+
 }
