@@ -52,6 +52,10 @@ public class ZebraPrinter extends CordovaPlugin {
         return false;
     }
 
+    /***
+     * Get the printer status. Cordova boilerplate.
+     * @param callbackContext
+     */
     private void printerStatus(final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
 
@@ -65,6 +69,10 @@ public class ZebraPrinter extends CordovaPlugin {
         });
     }
 
+    /***
+     * Discover Zebra bluetooth devices. Cordova boilerplate
+     * @param callbackContext
+     */
     private void discover(final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
         cordova.getThreadPool().execute(() -> {
@@ -77,6 +85,11 @@ public class ZebraPrinter extends CordovaPlugin {
         });
     }
 
+    /***
+     * Connect to a printer identified by it's macAddress. Cordova boilerplate.
+     * @param args
+     * @param callbackContext
+     */
     private void connect(JSONArray args, final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
         final String address;
@@ -96,6 +109,11 @@ public class ZebraPrinter extends CordovaPlugin {
         });
     }
 
+    /***
+     * Print the cpcl to the currently connected zebra printer. Cordova boilerplate
+     * @param args
+     * @param callbackContext
+     */
     private void print(JSONArray args, final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
         final String cpcl;
@@ -115,6 +133,10 @@ public class ZebraPrinter extends CordovaPlugin {
         });
     }
 
+    /***
+     * Determine if the printer is currently connected. Cordova boilerplate.
+     * @param callbackContext
+     */
     private void isConnected(final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
         cordova.getThreadPool().execute(() -> {
@@ -124,6 +146,10 @@ public class ZebraPrinter extends CordovaPlugin {
         });
     }
 
+    /***
+     * Disconnect from the currently connected printer. Cordova boilerplate.
+     * @param callbackContext
+     */
     private void disconnect(final CallbackContext callbackContext) {
         final ZebraPrinter instance = this;
         cordova.getThreadPool().execute(() -> {
@@ -132,6 +158,11 @@ public class ZebraPrinter extends CordovaPlugin {
         });
     }
 
+    /***
+     * Prints the CPCL formatted message to the currently connected printer.
+     * @param cpcl
+     * @return
+     */
     private boolean printCPCL(String cpcl) {
         try {
             if (!isConnected()) {
@@ -153,13 +184,22 @@ public class ZebraPrinter extends CordovaPlugin {
         return true;
     }
 
+    /***
+     * Returns boolean indicating if there is a printer currently connected
+     * @return
+     */
     private boolean isConnected() {
         return printerConnection != null && printerConnection.isConnected();
     }
 
+    /***
+     * Connects to a printer identified by the macAddress
+     * @param macAddress
+     * @return
+     */
     private boolean connect(String macAddress) {
         synchronized (ZebraPrinter.lock) {
-            Log.v("EMO", "Printer - Connecting...");
+            Log.v("EMO", "Printer - Connecting to " + macAddress);
             //disconnect if we are already connected
             try {
                 if (printerConnection != null && printerConnection.isConnected()) {
@@ -207,12 +247,18 @@ public class ZebraPrinter extends CordovaPlugin {
         }
     }
 
+    /***
+     * Disconnects from the currently connected printer
+     */
     private void disconnect() {
         synchronized (ZebraPrinter.lock) {
             closePrinter();
         }
     }
 
+    /***
+     * Essentially does a disconnect but outside of the lock. Only use this inside of a lock.
+     */
     private void closePrinter(){
         try {
             if (printerConnection != null) {
@@ -225,6 +271,10 @@ public class ZebraPrinter extends CordovaPlugin {
         }
     }
 
+    /***
+     * Get the status of the currently connected printer
+     * @return
+     */
     private JSONObject GetPrinterStatus() {
         JSONObject errorStatus = new JSONObject();
         try{
@@ -266,6 +316,10 @@ public class ZebraPrinter extends CordovaPlugin {
         return errorStatus;
     }
 
+    /***
+     * Find Zebra printers we can connect to
+     * @return
+     */
     private JSONArray NonZebraDiscovery() {
         JSONArray printers = new JSONArray();
 
