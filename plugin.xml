@@ -44,6 +44,11 @@
         <header-file src="src/ios/ZebraPrinter-Bridging-Header.h" />
         <!-- Plugin Source -->
         <source-file src="src/ios/ZebraPrinterPlugin.swift" />
+        <edit-config file="*-Info.plist" mode="merge" target="UISupportedExternalAccessoryProtocols">
+            <array>
+                <string>com.zebra.rawport</string>
+            </array>
+        </edit-config>
     </platform>
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
