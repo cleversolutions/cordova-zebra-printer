@@ -6,8 +6,9 @@
     <js-module name="ZebraPrinter" src="www/ZebraPrinter.js">
         <clobbers target="cordova.plugins.zebraPrinter" />
     </js-module>
-    <platform name="ios" SwiftVersion="5">
+    <platform name="ios">
         <config-file target="config.xml" parent="/*">
+            <preference name="SwiftVersion" value="5.0" />
             <feature name="ZebraPrinter">
                 <param name="ios-package" value="ZebraPrinterPlugin" />
             </feature>
@@ -18,32 +19,32 @@
             </array>
         </config-file>
         <!-- Zebra SDK -->
-        <header-file src="src/ios/lib/include/DiscoveredPrinter.h" />
-        <header-file src="src/ios/lib/include/DiscoveredPrinterNetwork.h" />
-        <header-file src="src/ios/lib/include/FieldDescriptionData.h" />
-        <header-file src="src/ios/lib/include/FileUtil.h" />
-        <header-file src="src/ios/lib/include/FormatUtil.h" />
-        <header-file src="src/ios/lib/include/GraphicsUtil.h" />
-        <header-file src="src/ios/lib/include/MagCardReader.h" />
-        <header-file src="src/ios/lib/include/MfiBtPrinterConnection.h" />
-        <header-file src="src/ios/lib/include/NetworkDiscoverer.h" />
-        <header-file src="src/ios/lib/include/PrinterStatus.h" />
-        <header-file src="src/ios/lib/include/PrinterStatusMessages.h" />
-        <header-file src="src/ios/lib/include/SGD.h" />
-        <header-file src="src/ios/lib/include/SmartCardReader.h" />
-        <header-file src="src/ios/lib/include/TcpPrinterConnection.h" />
-        <header-file src="src/ios/lib/include/ToolsUtil.h" />
-        <header-file src="src/ios/lib/include/ZebraErrorCode.h" />
-        <header-file src="src/ios/lib/include/ZebraPrinter.h" />
-        <header-file src="src/ios/lib/include/ZebraPrinterConnection.h" />
-        <header-file src="src/ios/lib/include/ZebraPrinterFactory.h" />
-        <header-file src="src/ios/lib/include/ZplPrintMode.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/DiscoveredPrinter.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/DiscoveredPrinterNetwork.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/FieldDescriptionData.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/FileUtil.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/FormatUtil.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/GraphicsUtil.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/MagCardReader.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/MfiBtPrinterConnection.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/NetworkDiscoverer.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/PrinterStatus.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/PrinterStatusMessages.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/SGD.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/SmartCardReader.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/TcpPrinterConnection.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/ToolsUtil.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/ZebraErrorCode.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/ZebraPrinter.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/ZebraPrinterConnection.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/ZebraPrinterFactory.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/ZplPrintMode.h" />
         <!-- ZSDK Library -->
-        <source-file src="src/ios/lib/libZSDK_API.a" framework="true" />
+        <source-file src="src/ios/ZebraPrinter/lib/libZSDK_API.a" framework="true" />
         <!-- Briding File -->
-        <header-file src="src/ios/Bridging-Header.h" />
+        <header-file src="src/ios/ZebraPrinter/ZebraPrinter-Bridging-Header.h" type="BridgingHeader" />
         <!-- Plugin Source -->
-        <source-file src="src/ios/ZebraPrinterPlugin.swift" />
+        <source-file src="src/ios/ZebraPrinter/ZebraPrinterPlugin.swift" />
     </platform>
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
