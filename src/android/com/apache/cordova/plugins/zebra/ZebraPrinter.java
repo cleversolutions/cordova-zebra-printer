@@ -88,8 +88,7 @@ public class ZebraPrinter extends CordovaPlugin {
             return;
         }
         cordova.getThreadPool().execute(() -> {
-            printer = instance.connect(address);
-            if (printer != null) {
+            if (instance.connect(address)) {
                 callbackContext.success();
             } else {
                 callbackContext.error("Connect Failed");
@@ -158,50 +157,71 @@ public class ZebraPrinter extends CordovaPlugin {
         return printerConnection != null && printerConnection.isConnected();
     }
 
-    private com.zebra.sdk.printer.ZebraPrinter connect(String macAddress) {
-        if (isConnected()) {
-            disconnect();
-        }
-        printerConnection = null;
-        printerConnection = new BluetoothConnection(macAddress);
+    private boolean connect(String macAddress) {
         synchronized (ZebraPrinter.lock) {
+            Log.v("EMO", "Printer - Connecting...");
+            //disconnect if we are already connected
             try {
-                printerConnection.open();
-            }
-
-            catch (ConnectionException e) {
-                Log.v("EMO", "Printer - Failed to open connection", e);
-                disconnect();
-            }
-            printer = null;
-            if (printerConnection.isConnected()) {
-                try {
-                    printer = ZebraPrinterFactory.getInstance(printerConnection);
-                } catch (ConnectionException e) {
-                    Log.v("EMO", "Printer - Error...", e);
-                    printer = null;
-                    disconnect();
-                } catch (ZebraPrinterLanguageUnknownException e) {
-                    Log.v("EMO", "Printer - Unknown Printer Language", e);
-                    printer = null;
-                    disconnect();
-                }
-            }
-        }
-        return printer;
-    }
-
-    private void disconnect() {
-        synchronized (ZebraPrinter.lock) {
-            try {
-                if (printerConnection != null) {
+                if (printerConnection != null && printerConnection.isConnected()) {
                     printerConnection.close();
                     printerConnection = null;
                     printer = null;
                 }
-            } catch (ConnectionException e) {
-                e.printStackTrace();
+            }catch (Exception ex){
+                Log.v("EMO", "Printer - Failed to close connection before connecting", ex);
             }
+
+            //create a new BT connection
+            printerConnection = new BluetoothConnection(macAddress);
+
+            //check that it isn't null
+            if(printerConnection == null){
+                return false;
+            }
+
+            //open that connection
+            try {
+                printerConnection.open();
+            } catch (Exception e) {
+                Log.v("EMO", "Printer - Failed to open connection", e);
+                printerConnection = null;
+                printer = null;
+                return false;
+            }
+
+            //check if it opened
+            if (printerConnection != null && printerConnection.isConnected()) {
+                //try to get a printer
+                try {
+                    printer = ZebraPrinterFactory.getInstance(printerConnection);
+                } catch (Exception e) {
+                    Log.v("EMO", "Printer - Error...", e);
+                    closePrinter();
+                    return false;
+                }
+                return true;
+            }else {
+                //printer was null or not connected
+                return false;
+            }
+        }
+    }
+
+    private void disconnect() {
+        synchronized (ZebraPrinter.lock) {
+            closePrinter();
+        }
+    }
+
+    private void closePrinter(){
+        try {
+            if (printerConnection != null) {
+                printerConnection.close();
+                printerConnection = null;
+            }
+            printer = null;
+        } catch (ConnectionException e) {
+            e.printStackTrace();
         }
     }
 
