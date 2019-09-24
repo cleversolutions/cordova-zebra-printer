@@ -5,7 +5,7 @@ import ExternalAccessory
 class ZebraPrinterPlugin: CDVPlugin {
     var printerConnection: ZebraPrinterConnection?
     var printer: ZebraPrinter?
-    
+
     /**
      * Discover connectable zebra printers
      *
@@ -14,7 +14,7 @@ class ZebraPrinterPlugin: CDVPlugin {
         DispatchQueue.global(qos: .background).async {
             let manager = EAAccessoryManager.shared()
             let accessories = manager.connectedAccessories
-            
+
             var devices = [Any]()
             accessories.forEach { (accessory) in
                 let name = accessory.name
@@ -36,7 +36,7 @@ class ZebraPrinterPlugin: CDVPlugin {
             )
         }
     }
-    
+
     /**
      * Get the status of the printer we are currently connected to
      *
@@ -54,7 +54,7 @@ class ZebraPrinterPlugin: CDVPlugin {
             status["isHeadOpen"] = false
             status["isHeadCold"] = false
             status["isPartialFormatInProgress"] = false
-            
+
             if(self.printerConnection != nil && self.printerConnection!.isConnected() && self.printer != nil){
                 let zebraPrinterStatus = try? self.printer?.getCurrentStatus()
                 if(zebraPrinterStatus != nil){
@@ -69,7 +69,7 @@ class ZebraPrinterPlugin: CDVPlugin {
                             NSLog("Printer Not Ready.")
                         }
                     }
-                    
+
                     status["connected"] = true
                     status["isReadyToPrint"] = zebraPrinterStatus?.isReadyToPrint
                     status["isPaused"] = zebraPrinterStatus?.isPaused
@@ -80,7 +80,7 @@ class ZebraPrinterPlugin: CDVPlugin {
                     status["isHeadOpen"] = zebraPrinterStatus?.isHeadOpen
                     status["isHeadCold"] = zebraPrinterStatus?.isHeadCold
                     status["isPartialFormatInProgress"] = zebraPrinterStatus?.isPartialFormatInProgress
-                    
+
                     NSLog("ZebraPrinter:: returning status")
                     let pluginResult = CDVPluginResult(
                         status: CDVCommandStatus_OK,
@@ -119,7 +119,7 @@ class ZebraPrinterPlugin: CDVPlugin {
             }
         }
     }
-    
+
     /**
      * Print the cpcl
      *
@@ -130,10 +130,6 @@ class ZebraPrinterPlugin: CDVPlugin {
             if( self.isConnected()){
                 let data = cpcl.data(using: .utf8)
                 var error: NSError?
-                // it seems self.isConnected() can lie if the printer has power cycled
-                // a workaround is to close and reopen the connection
-                self.printerConnection!.close()
-                self.printerConnection!.open()
                 self.printerConnection!.write(data, error:&error)
                 if error != nil{
                     NSLog("ZebraPrinter:: error printing -> " + (error?.localizedDescription ?? "Unknonwn Error"))
@@ -167,7 +163,7 @@ class ZebraPrinterPlugin: CDVPlugin {
             }
         }
     }
-    
+
     /**
      * Check if we are connectd to the printer or not
      *
@@ -211,29 +207,29 @@ class ZebraPrinterPlugin: CDVPlugin {
                 )
                 return
             }
-            
+
             NSLog("ZebraPrinter:: connecting to " + address)
-            
+
             //try to close an existing connection
             if(self.printerConnection != nil){
                 self.printerConnection?.close()
             }
-            
+
             //clear out our existing printer & connection
             self.printerConnection = nil;
             self.printer = nil;
-            
+
             //create and open a new connection
             self.printerConnection = MfiBtPrinterConnection(serialNumber: address)
             NSLog("ZebraPrinter:: got connection. opening...")
             self.printerConnection?.open()
             NSLog("ZebraPrinter:: opened connection")
-            
+
             if( self.isConnected()){
                 NSLog("ZebraPrinter:: getting printer")
                 self.printer = try? ZebraPrinterFactory.getInstance(self.printerConnection as? NSObjectProtocol & ZebraPrinterConnection)
                 NSLog("ZebraPrinter:: got printer")
-                
+
                 if(self.printer == nil)
                 {
                     NSLog("ZebraPrinter:: nil printer")
@@ -281,7 +277,7 @@ class ZebraPrinterPlugin: CDVPlugin {
             self.printerConnection = nil
             self.printer = nil
         }
-        
+
         let pluginResult = CDVPluginResult(
             status: CDVCommandStatus_OK
         )
@@ -289,5 +285,5 @@ class ZebraPrinterPlugin: CDVPlugin {
             pluginResult,
             callbackId: command.callbackId
         )
-    }    
+    }
 }
