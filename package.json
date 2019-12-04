@@ -16,6 +16,12 @@
   "author": "Evan Moore",
   "license": "MIT",
   "dependencies": {
-    "gulp": "^3.9.1"
-  }
+    "gulp": "^4.0.0",
+    "snyk": "^1.256.0"
+  },
+  "scripts": {
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "snyk": true
 }
