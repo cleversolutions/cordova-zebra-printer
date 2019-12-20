@@ -1,30 +1,52 @@
 package com.apache.cordova.plugins.zebra;
 
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.hardware.usb.UsbDevice;
+import android.hardware.usb.UsbManager;
 import android.util.Log;
 
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
 
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.Connection;
 import com.zebra.sdk.comm.ConnectionException;
+import com.zebra.sdk.comm.UsbConnection;
 import com.zebra.sdk.printer.PrinterStatus;
 import com.zebra.sdk.printer.ZebraPrinterFactory;
-import com.zebra.sdk.printer.ZebraPrinterLanguageUnknownException;
+import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
+import com.zebra.sdk.printer.discovery.DiscoveredPrinterUsb;
+import com.zebra.sdk.printer.discovery.DiscoveryHandler;
+import com.zebra.sdk.printer.discovery.UsbDiscoverer;
 
 public class ZebraPrinter extends CordovaPlugin {
     private Connection printerConnection;
     private com.zebra.sdk.printer.ZebraPrinter printer;
+    private UsbPermissionResolver usbPermissionResolver;
     private static final String lock = "ZebraPluginLock";
+
+    @Override
+    public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+        super.initialize(cordova, webView);
+        usbPermissionResolver = new UsbPermissionResolver(cordova);
+    }
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) {
@@ -48,6 +70,13 @@ public class ZebraPrinter extends CordovaPlugin {
             case "printerStatus":
                 this.printerStatus(callbackContext);
                 return true;
+            case "requestUsbPermission":
+                usbPermissionResolver.resolvePermission(callbackContext);
+                return true;
+            case "connectUSB":
+                this.connectUSB(callbackContext);
+                return true;
+
         }
         return false;
     }
@@ -83,6 +112,77 @@ public class ZebraPrinter extends CordovaPlugin {
                 callbackContext.error("Discovery Failed");
             }
         });
+    }
+
+    private void connectUSB(final CallbackContext callbackContext) {
+        final ZebraPrinter instance = this;
+        if (!usbPermissionResolver.hasPermissionToCommunicate) {
+            callbackContext.error("NO_PERMISSION");
+        } else {
+            cordova.getThreadPool().execute(new Runnable() {
+                @Override
+                public void run() {
+                    synchronized (ZebraPrinter.lock) {
+                        Log.v("EMO", "Printer - Connecting to USB");
+                        //disconnect if we are already connected
+                        try {
+                            if (printerConnection != null && printerConnection.isConnected()) {
+                                printerConnection.close();
+                                printerConnection = null;
+                                printer = null;
+                            }
+                        }catch (Exception ex){
+                            Log.v("EMO", "Printer - Failed to close connection before connecting", ex);
+                        }
+
+                        if (usbPermissionResolver.discoveredPrinterUsb == null) {
+                            callbackContext.error("NO_DEVICE");
+                            return;
+                        }
+
+                        UsbDevice PrinterUsbDevice = usbPermissionResolver.discoveredPrinterUsb.device;
+
+                        // create new USB connection
+                        printerConnection = new UsbConnection(usbPermissionResolver.mUsbManager, PrinterUsbDevice);
+
+                        //check that it isn't null
+                        if (printerConnection == null) {
+                            callbackContext.error("USB_CONNECTION_FAILED");
+                            return;
+                        }
+
+                        //open that connection
+                        try {
+                            printerConnection.open();
+                        } catch (Exception e) {
+                            Log.v("EMO", "Printer - Failed to open connection", e);
+                            printerConnection = null;
+                            printer = null;
+                            return;
+                        }
+
+                        //check if it opened
+                        if (printerConnection != null && printerConnection.isConnected()) {
+                            //try to get a printer
+                            try {
+                                printer = ZebraPrinterFactory.getInstance(printerConnection);
+                                callbackContext.success();
+                            } catch (Exception e) {
+                                Log.v("EMO", "Printer - Error...", e);
+                                closePrinter();
+                                callbackContext.error("PRINTER_ERROR: " + e.getMessage());
+                                return;
+                            }
+                            return;
+                        }else {
+                            //printer was null or not connected
+                            callbackContext.error("PRINTER_NOT_CONNECTED");
+                            return;
+                        }
+                    }
+                }
+            });
+        }
     }
 
     /***
@@ -125,7 +225,7 @@ public class ZebraPrinter extends CordovaPlugin {
             return;
         }
         cordova.getThreadPool().execute(() -> {
-            if (instance.printCPCL(cpcl)) {
+            if (instance.printRawData(cpcl)) {
                 callbackContext.success();
             } else {
                 callbackContext.error("Print Failed. Printer Likely Disconnected.");
@@ -159,22 +259,26 @@ public class ZebraPrinter extends CordovaPlugin {
     }
 
     /***
-     * Prints the CPCL formatted message to the currently connected printer.
-     * @param cpcl
+     * Prints the CPCL or ZPL formatted message to the currently connected printer.
+     * @param rawDataString
      * @return
      */
-    private boolean printCPCL(String cpcl) {
+    private boolean printRawData(String rawDataString) {
         try {
             if (!isConnected()) {
                 Log.v("EMO", "Printer Not Connected");
                 return false;
             }
 
-            byte[] configLabel = cpcl.getBytes();
+            byte[] configLabel = rawDataString.getBytes();
             printerConnection.write(configLabel);
 
             if (printerConnection instanceof BluetoothConnection) {
                 String friendlyName = ((BluetoothConnection) printerConnection).getFriendlyName();
+                System.out.println(friendlyName);
+            } else if (printerConnection instanceof UsbConnection) {
+                // I dunno, just copy paste
+                String friendlyName = ((UsbConnection) printerConnection).getDeviceName();
                 System.out.println(friendlyName);
             }
         } catch (ConnectionException e) {
@@ -287,7 +391,7 @@ public class ZebraPrinter extends CordovaPlugin {
             errorStatus.put("isHeadTooHot", false);
             errorStatus.put("isHeadOpen", false);
             errorStatus.put("isHeadCold", false);
-            errorStatus.put("isPartialFormatInProgress", false);        
+            errorStatus.put("isPartialFormatInProgress", false);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -341,6 +445,91 @@ public class ZebraPrinter extends CordovaPlugin {
             System.err.println(e.getMessage());
         }
         return printers;
+    }
+
+    class UsbPermissionResolver {
+        private static final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
+        private CallbackContext usbPermissionCallback = null;
+        PendingIntent mPermissionIntent;
+        boolean hasPermissionToCommunicate = false;
+        UsbManager mUsbManager;
+        DiscoveredPrinterUsb discoveredPrinterUsb;
+
+        // Catches intent indicating if the user grants permission to use the USB device
+        private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
+
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (ACTION_USB_PERMISSION.equals(action)) {
+                    synchronized (this) {
+                        UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                        PluginResult result = null;
+                        if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                            if (device != null) {
+                                hasPermissionToCommunicate = true;
+                                result = new PluginResult(PluginResult.Status.OK,"PERMISSION_GRANTED");
+                            } else {
+                                result = new PluginResult(PluginResult.Status.ERROR,"NO_DEVICE");
+                            }
+                        } else {
+                            result = new PluginResult(PluginResult.Status.ERROR,"NO_PERMISSION");
+                        }
+                        result.setKeepCallback(true);
+                        usbPermissionCallback.sendPluginResult(result);
+                        usbPermissionCallback = null;
+                    }
+                }
+            }
+        };
+
+        UsbPermissionResolver(CordovaInterface cordova) {
+            Context ctx = cordova.getContext();
+            mUsbManager = (UsbManager) ctx.getSystemService(Context.USB_SERVICE);
+            mPermissionIntent = PendingIntent.getBroadcast(ctx, 0, new Intent(ACTION_USB_PERMISSION), 0);
+            IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
+            ctx.registerReceiver(mUsbReceiver, filter);
+        }
+
+        public void resolvePermission(CallbackContext cb) {
+            usbPermissionCallback = cb;
+            new Thread(new Runnable() {
+                public void run() {
+                    // Find connected printers
+                    UsbDiscoveryHandler handler = new UsbDiscoveryHandler();
+                    UsbDiscoverer.findPrinters(cordova.getContext(), handler);
+                    try {
+                        if (handler.printers != null && handler.printers.size() > 0)
+                        {
+                            discoveredPrinterUsb = handler.printers.get(0);
+                            mUsbManager.requestPermission(discoveredPrinterUsb.device, mPermissionIntent);
+                        } else {
+                            cb.success("NO_DEVICE");
+                        }
+                    } catch (Exception e) {
+                        cb.error(e.getMessage() + e.getLocalizedMessage());
+                    }
+                }
+            }).start();
+        }
+
+        // Handles USB device discovery
+        class UsbDiscoveryHandler implements DiscoveryHandler {
+            public List<DiscoveredPrinterUsb> printers;
+
+            public UsbDiscoveryHandler() {
+                printers = new LinkedList<DiscoveredPrinterUsb>();
+            }
+
+            public void foundPrinter(final DiscoveredPrinter printer) {
+                printers.add((DiscoveredPrinterUsb) printer);
+            }
+
+            public void discoveryFinished() {
+            }
+
+            public void discoveryError(String message) {
+            }
+        }
     }
 
 }
