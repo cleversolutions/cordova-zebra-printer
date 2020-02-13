@@ -11,6 +11,7 @@
  * ALL RIGHTS RESERVED
  ***********************************************/
 
+#import "ResponseValidator.h"
 
 /**
  * A connection to a Zebra printer.
@@ -39,6 +40,20 @@
 - (NSInteger) getTimeToWaitForMoreData;
 
 /**
+ * Set the maximum time, in milliseconds, to wait for any data to be received
+ *
+ * @param paramMaxTimeoutForRead the maximum time, in milliseconds, to wait for any data to be received.
+ */
+-(void) setMaxTimeoutForRead:(NSInteger) paramMaxTimeoutForRead;
+
+/**
+ * Set the maximum time, in milliseconds, to wait in-between reads after the initial read.
+ *
+ * @param paramMimeToWaitForMoreData the maximum time, in milliseconds, to wait in-between reads after the initial read.
+ */
+-(void) setTimeToWaitForMoreData:(NSInteger) paramMimeToWaitForMoreData;
+
+/**
  * Returns <c>YES</c> if the connection is open.
  * 
  * @return <c>YES</c> if this connection is open.
@@ -63,7 +78,7 @@
 /**
  * Writes the number of bytes from <c>data</c> to the connection. The connection must be
  * open before this method is called. If ZebraPrinterConnection::write:error: is called when a connection is closed, -1 is returned.
- * 
+ *
  * @param data The data.
  * @param error Will be set to the error that occured.
  * @return The number of bytes written or -1 if an error occurred.
@@ -71,12 +86,50 @@
 - (NSInteger) write:(NSData *)data error:(NSError **)error;
 
 /**
+ *  Writes <c>length</c> bytes from <c>data</c> starting at <c>offset</c>. T. The connection must be
+ * open before this method is called. If ZebraPrinterConnection::write:error: is called when a connection is closed, -1 is returned.
+ *
+ * @param data The data.
+ * @param error Will be set to the error that occured.
+ * @return The number of bytes written or -1 if an error occurred.
+ */
+- (NSInteger) write:(NSData *)data withOffset:(NSInteger) offset
+      andWithLength:(NSInteger) length
+              error:(NSError **)error;
+
+/**
+ *  Writes all available bytes from the data source to the connection. The connection must be
+ * open before this method is called. If ZebraPrinterConnection::write:error: is called when a connection is closed, -1 is returned.
+ *
+ * @param data The data.
+ * @param error Will be set to the error that occured.
+ * @return The number of bytes written or -1 if an error occurred.
+ */
+- (NSInteger) writeStream:(NSInputStream *)dataSource error:(NSError **)error;
+
+/**
  * Reads all the available data from the connection. This call is non-blocking.
- * 
+ *
  * @param error Will be set to the error that occured.
  * @return The bytes read from the connection or <c>nil</c> if an error occurred.
  */
 - (NSData *)read: (NSError**)error;
+
+/**
+ * Reads all the available data from the connection and write it to <c>destinationStream</c>. This call is non-blocking.
+ *
+ * @param destinationStream Output stream to recive the data read from the connection.
+ * @param error Will be set to the error that occured.
+ * @return The bytes read from the connection or <c>nil</c> if an error occurred.
+ */
+- (void)read:(NSOutputStream *)destinationStream error:(NSError **)error;
+
+/**
+ * Return a human-readable description of the connection.
+ *
+ * @return a human-readable description of the connection.
+ */
+- (NSString *)getSimpleConnectionName;
 
 /**
  * Returns <c>YES</c> if at least one byte is available for reading from this connection.
@@ -92,6 +145,48 @@
  * @param maxTimeout Maximum time in milliseconds to wait for an initial response from the printer.
  */
 - (void) waitForData: (NSInteger)maxTimeout;
+
+/**
+ * Sends <c>data</c> and returns the response data. The software returns immediately if the data
+ * received contains <c>terminator</c>. The connection must be open before this method is called. If
+ * <c>sendAndWaitForResponse</c> is called when a connection is closed, a <c>ConnectionException</c> is
+ * thrown.
+ *
+ * @param data byte array of data to send
+ * @param validator If the response is valid, the input is considered complete and the method returns.
+ * May be used to avoid waiting for more data when the response is always terminated with a known string. Use
+ * <c>null</c> if no validator is desired.
+ * @param error Will be set to the error that occured.
+ * @return received data
+ */
+
+-(NSData*) sendAndWaitForResponse:(NSData*)data
+            withResponseValidator:(id<ResponseValidator,NSObject>) validator
+                        withError:(NSError **)error;
+
+
+/**
+ * Sends <c>data</c> and returns the response data. The software returns immediately if the response data
+ * received contains <c>terminator</c>. The connection must be open before this method is called. If
+ * <c>sendAndWaitForResponse</c> is called when a connection is closed, a <c>ConnectionException</c> is
+ * thrown.
+ *
+ * @param data byte array of data to send
+ * @param maxTimeoutForRead The maximum time, in milliseconds, to wait for the initial response to be received.
+ * If no data is received during this time, the function returns a zero length array.
+ * @param timeToWaitForMoreData After the initial response, if no data is received for this period of time, the
+ * input is considered complete and the method returns.
+ * @param validator If the response is valid, the input is considered complete and the method returns.
+ * May be used to avoid waiting for more data when the response is always terminated with a known string. Use
+ * <c>null</c> if no validator is desired.
+ * @param error Will be set to the error that occured.
+* @return received data
+ */
+-(NSData*) sendAndWaitForResponse:(NSData*)data
+            withMaxTimeoutForRead:(NSInteger) maxTimeoutForRead
+     andWithTimeToWaitForMoreData:(NSInteger) timeToWaitForMoreData
+            withResponseValidator:(id<ResponseValidator,NSObject>) validator
+                     andWithError:(NSError **)error;
 
 @end
 
@@ -116,10 +211,6 @@
  *	<li>As a best pracitce, Zebra recommends not making calls to our API from the GUI thread. Use <a href="http://developer.apple.com/library/ios/#documentation/Performance/Reference/GCD_libdispatch_Ref/Reference/reference.html">Grand Central Dispatch</a> to accomplish this.</li>
  *	<li>Only Mobile printers are available with built-in magnetic card readers</li>
  *	<li>Each ZebraPrinterConnection object should only be used on a single thread</li>
- *  <li>In iOS 9, a new Build Variant “Enable Bitcode” was introduced.
-	This variant is initially set to “Yes” which may cause any project using the ZSDK_API
-	to not build properly.<br><ul><li>To change this, go into xCode > Build Settings > Build Options
-	and set “Enable Bitcode” to “No” for the project to be exported.</li></ul></li>
  *	</ol>
  *
  *  <b>Project Settings and Configuration</b>
