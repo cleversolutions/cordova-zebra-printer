@@ -103,6 +103,18 @@ var ZebraPrinter = (function (_super) {
         __metadata("design:paramtypes", []),
         __metadata("design:returntype", Promise)
     ], ZebraPrinter.prototype, "discover", null);
+    __decorate([
+        Cordova(),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", []),
+        __metadata("design:returntype", Promise)
+    ], ZebraPrinter.prototype, "requestUsbPermission", null);
+    __decorate([
+        Cordova(),
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", []),
+        __metadata("design:returntype", Promise)
+    ], ZebraPrinter.prototype, "connectUSB", null);
     ZebraPrinter = __decorate([
         Plugin({
             pluginName: 'ZebraPrinter',

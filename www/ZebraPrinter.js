@@ -23,3 +23,11 @@ exports.isConnected = function (success, error) {
 exports.print = function (cpcl, success, error) {
     exec(success, error, 'ZebraPrinter', 'print', [cpcl]);
 };
+
+exports.connectUSB = function (success, error) {
+    exec(success, error, 'ZebraPrinter', 'connectUSB', []);
+};
+
+exports.requestUsbPermission = function(success, error) {
+    exec(success, error, 'ZebraPrinter', 'requestUsbPermission')
+}
