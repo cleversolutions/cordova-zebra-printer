@@ -30,6 +30,7 @@
         <header-file src="src/ios/ZebraPrinter/lib/include/NetworkDiscoverer.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/PrinterStatus.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/PrinterStatusMessages.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/ResponseValidator.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/SGD.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/SmartCardReader.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/TcpPrinterConnection.h" />
