@@ -30,6 +30,7 @@
         <header-file src="src/ios/ZebraPrinter/lib/include/NetworkDiscoverer.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/PrinterStatus.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/PrinterStatusMessages.h" />
+        <header-file src="src/ios/ZebraPrinter/lib/include/ResponseValidator.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/SGD.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/SmartCardReader.h" />
         <header-file src="src/ios/ZebraPrinter/lib/include/TcpPrinterConnection.h" />
@@ -54,6 +55,8 @@
         </config-file>
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.BLUETOOTH" />
+            <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+            <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
             <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
         </config-file>
         <source-file src="src/android/com/apache/cordova/plugins/zebra/ZebraPrinter.java" target-dir="src/com/apache/cordova/plugins/zebra/" />

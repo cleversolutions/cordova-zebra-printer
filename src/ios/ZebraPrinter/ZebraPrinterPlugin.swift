@@ -132,9 +132,9 @@ class ZebraPrinterPlugin: CDVPlugin {
                 var error: NSError?
                 // it seems self.isConnected() can lie if the printer has power cycled
                 // a workaround is to close and reopen the connection
-                self.printerConnection!.close()
-                self.printerConnection!.open()
-                self.printerConnection!.write(data, error:&error)
+//                self.printerConnection?.close()
+//                self.printerConnection?.open()
+                self.printerConnection?.write(data, error:&error)
                 if error != nil{
                     NSLog("ZebraPrinter:: error printing -> " + (error?.localizedDescription ?? "Unknonwn Error"))
                     let pluginResult = CDVPluginResult(
@@ -231,7 +231,7 @@ class ZebraPrinterPlugin: CDVPlugin {
             
             if( self.isConnected()){
                 NSLog("ZebraPrinter:: getting printer")
-                self.printer = try? ZebraPrinterFactory.getInstance(self.printerConnection as? NSObjectProtocol & ZebraPrinterConnection)
+                self.printer = ZebraPrinterFactory.getInstance(self.printerConnection as? NSObjectProtocol & ZebraPrinterConnection, with: PRINTER_LANGUAGE_CPCL)
                 NSLog("ZebraPrinter:: got printer")
                 
                 if(self.printer == nil)
